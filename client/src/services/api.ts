@@ -11,5 +11,23 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
+//Login APIs
 export const loginUser = (data: any) => API.post('/auth/login', data);
 export const registerUser = (data: any) => API.post('/auth/register', data);
+
+//Meeting APIs
+export const scheduleMeeting = (data: any) => API.post('/meetings', data);
+export const getMeetings = () => API.get('/meetings');
+export const updateMeetingStatus = (id: string, status: string) => API.put(`/meetings/${id}/status`, { status });
+
+// Document APIs
+export const getDocuments = () => API.get('/documents');
+export const signDocument = (id: string) => API.put(`/documents/${id}/sign`);
+
+export const uploadDocument = (formData: FormData) => {
+  return API.post('/documents', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
