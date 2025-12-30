@@ -2,7 +2,7 @@
 
 **Base URL:**
 * **Local:** `http://localhost:5000/api`
-* **Production:** `https://nexus-backend.onrender.com/api` (Replace with your actual Render URL)
+* **Production:** `nexus-one-ivory.vercel.app` 
 
 **Authentication:**
 All endpoints (except Login/Register) require a valid JWT Token.
