@@ -7,7 +7,7 @@ import { Card, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 
 // REPLACE WITH YOUR PUBLISHABLE KEY from Stripe Dashboard
-const stripePromise = loadStripe('pk_test_...'); 
+const stripePromise = loadStripe('pk_test_51Sk0Vh2M9pWMpDCvFvSNLeYQcThnWzqpOPIQagwTE4MooyVlZXqNR6bGs8niIvYaznIjSMoe34dpqnkcoVxtMytD00UsCnQToT'); 
 
 const CheckoutForm = ({ amount, onSuccess }: { amount: number, onSuccess: () => void }) => {
     const stripe = useStripe();

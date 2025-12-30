@@ -36,27 +36,50 @@ const createPaymentIntent = async (req, res) => {
 
 // 2. Confirm Deposit
 const confirmDeposit = async (req, res) => {
+    console.log("--- DEBUG: Starting Deposit Confirmation ---");
+    console.log("Request Body:", req.body);
+
     const { amount, paymentId } = req.body;
     const userId = req.user.id;
 
     try {
         const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ message: "User not found" });
+        if (!user) {
+            console.error("DEBUG Error: User not found in DB");
+            return res.status(404).json({ message: "User not found" });
+        }
 
-        user.walletBalance += Number(amount);
+        // FIX: Handle users created before the wallet system existed
+        // If walletBalance is undefined, treat it as 0
+        const currentBalance = user.walletBalance || 0;
+        
+        console.log(`DEBUG: User ${user.name} found. Old Balance: ${currentBalance}`);
+
+        user.walletBalance = currentBalance + Number(amount);
         await user.save();
+        
+        console.log(`DEBUG: New Balance Saved: ${user.walletBalance}`);
 
-        await Transaction.create({
-            user: userId,
-            type: 'deposit',
-            amount,
-            status: 'completed',
-            description: `Stripe Deposit (ID: ${paymentId})`
-        });
+        // Try to create transaction
+        try {
+            await Transaction.create({
+                user: userId,
+                type: 'deposit',
+                amount,
+                status: 'completed',
+                description: `Stripe Deposit (ID: ${paymentId})`
+            });
+            console.log("DEBUG: Transaction Record Created");
+        } catch (transError) {
+            console.error("DEBUG Error: Failed to create Transaction record:", transError.message);
+            // We don't fail the whole request if just the history log fails, but we should know about it.
+        }
 
         res.status(200).json({ balance: user.walletBalance });
     } catch (error) {
-        res.status(500).json({ message: 'Deposit confirmation failed' });
+        console.error("--- CRITICAL ERROR in confirmDeposit ---");
+        console.error(error); // This prints the full error to your terminal
+        res.status(500).json({ message: 'Deposit confirmation failed', error: error.message });
     }
 };
 
