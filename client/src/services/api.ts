@@ -31,3 +31,8 @@ export const uploadDocument = (formData: FormData) => {
     },
   });
 };
+
+export const depositFunds = (amount: number) => API.post('/payments/deposit', { amount });
+export const withdrawFunds = (amount: number) => API.post('/payments/withdraw', { amount });
+export const getTransactions = () => API.get('/payments/history');
+export const getBalance = () => API.get('/payments/balance');

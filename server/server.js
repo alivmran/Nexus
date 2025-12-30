@@ -3,13 +3,17 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const http = require('http');
 const { Server } = require('socket.io');
+const path = require('path');
 const connectDB = require('./config/db');
+
+// --- FIX: LOAD ENV VARIABLES FIRST ---
+dotenv.config(); 
+
+// --- FIX: NOW IMPORT ROUTES (After dotenv is loaded) ---
 const authRoutes = require('./routes/authRoutes');
 const meetingRoutes = require('./routes/meetingRoutes');
-const path = require('path');
 const docRoutes = require('./routes/docRoutes');
-
-dotenv.config();
+const paymentRoutes = require('./routes/paymentRoutes');
 
 connectDB();
 
@@ -22,6 +26,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/meetings', meetingRoutes);
 app.use('/api/documents', docRoutes);
+app.use('/api/payments', paymentRoutes);
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
 const io = new Server(server, {

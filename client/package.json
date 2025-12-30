@@ -11,6 +11,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@stripe/react-stripe-js": "^5.4.1",
+    "@stripe/stripe-js": "^8.6.0",
     "@types/simple-peer": "^9.11.9",
     "axios": "^1.13.2",
     "date-fns": "^3.3.1",

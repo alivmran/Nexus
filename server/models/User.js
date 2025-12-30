@@ -20,6 +20,10 @@ const userSchema = new mongoose.Schema({
         enum: ['entrepreneur', 'investor'],
         default: 'entrepreneur',
     },
+    walletBalance: { 
+        type: Number, 
+        default: 0 
+    },
     profile: {
         bio: { type: String },
         history: { type: String },
