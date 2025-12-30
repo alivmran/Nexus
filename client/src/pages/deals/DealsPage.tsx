@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import axios from 'axios';
+// Import the centralized API helper instead of axios directly
+import { API } from '../../services/api'; 
 import { useAuth } from '../../context/AuthContext';
 import { Card, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 
-// REPLACE WITH YOUR PUBLISHABLE KEY from Stripe Dashboard
+// REPLACE WITH YOUR PUBLISHABLE KEY
 const stripePromise = loadStripe('pk_test_51Sk0Vh2M9pWMpDCvFvSNLeYQcThnWzqpOPIQagwTE4MooyVlZXqNR6bGs8niIvYaznIjSMoe34dpqnkcoVxtMytD00UsCnQToT'); 
 
 const CheckoutForm = ({ amount, onSuccess }: { amount: number, onSuccess: () => void }) => {
@@ -23,11 +24,9 @@ const CheckoutForm = ({ amount, onSuccess }: { amount: number, onSuccess: () => 
         setLoading(true);
 
         try {
-            // 1. Get Client Secret from Backend
-            const { data } = await axios.post('http://localhost:5000/api/payments/create-payment-intent', 
-                { amount },
-                { headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('user')!).token}` } }
-            );
+            // 1. Get Client Secret (Using centralized API)
+            // Note: API.post automatically adds the Authorization header via interceptors
+            const { data } = await API.post('/payments/create-payment-intent', { amount });
 
             // 2. Confirm Card Payment
             const result = await stripe.confirmCardPayment(data.clientSecret, {
@@ -41,16 +40,16 @@ const CheckoutForm = ({ amount, onSuccess }: { amount: number, onSuccess: () => 
                 setError(result.error.message || 'Payment failed');
             } else {
                 if (result.paymentIntent.status === 'succeeded') {
-                    // 3. Tell Backend to Update Balance
-                    await axios.post('http://localhost:5000/api/payments/confirm', 
-                        { amount, paymentId: result.paymentIntent.id },
-                        { headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('user')!).token}` } }
-                    );
+                    // 3. Update Balance (Using centralized API)
+                    await API.post('/payments/confirm', { 
+                        amount, 
+                        paymentId: result.paymentIntent.id 
+                    });
                     onSuccess();
                 }
             }
         } catch (err: any) {
-            setError(err.message);
+            setError(err.response?.data?.message || err.message);
         }
         setLoading(false);
     };
@@ -74,10 +73,8 @@ export const DealsPage: React.FC = () => {
 
     const fetchBalance = async () => {
         try {
-            const token = JSON.parse(localStorage.getItem('user')!).token;
-            const { data } = await axios.get('http://localhost:5000/api/payments/balance', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            // Using centralized API
+            const { data } = await API.get('/payments/balance');
             setBalance(data.balance);
         } catch (err) { console.error(err); }
     };

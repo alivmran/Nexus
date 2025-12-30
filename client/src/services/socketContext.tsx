@@ -2,6 +2,10 @@ import React, { createContext, useState, useRef, useEffect, ReactNode } from 're
 import { io } from 'socket.io-client';
 import Peer from 'simple-peer';
 
+// Detects if we are on the internet or local (Deployment Ready)
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+const socket = io(SOCKET_URL);
+
 interface SocketContextType {
   call: any;
   callAccepted: boolean;
@@ -18,8 +22,6 @@ interface SocketContextType {
 }
 
 const SocketContext = createContext<SocketContextType | null>(null);
-
-const socket = io('http://localhost:5000');
 
 const ContextProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [stream, setStream] = useState<MediaStream | null>(null);
@@ -53,10 +55,12 @@ const ContextProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setCallAccepted(true);
         const peer = new Peer({ initiator: false, trickle: false, stream: stream! });
 
+        // FIX: Explicitly type 'data' as any to satisfy TypeScript
         peer.on('signal', (data: any) => {
             socket.emit('answerCall', { signal: data, to: (call as any).from });
         });
 
+        // FIX: Explicitly type 'currentStream' as MediaStream
         peer.on('stream', (currentStream: MediaStream) => {
             if (userVideo.current) {
                 userVideo.current.srcObject = currentStream;
@@ -70,10 +74,12 @@ const ContextProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const callUser = (id: string) => {
         const peer = new Peer({ initiator: true, trickle: false, stream: stream! });
 
+        // FIX: Explicitly type 'data' as any
         peer.on('signal', (data: any) => {
             socket.emit('callUser', { userToCall: id, signalData: data, from: me, name });
         });
 
+        // FIX: Explicitly type 'currentStream' as MediaStream
         peer.on('stream', (currentStream: MediaStream) => {
             if (userVideo.current) {
                 userVideo.current.srcObject = currentStream;

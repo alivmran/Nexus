@@ -1,7 +1,12 @@
 import axios from 'axios';
 
-const API = axios.create({ baseURL: 'http://localhost:5000/api' });
+// 1. Dynamic URL for Deployment
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+// 2. Create Axios Instance AND EXPORT IT (Fixes your error)
+export const API = axios.create({ baseURL: BASE_URL });
+
+// 3. Add Token Interceptor (Keeps you logged in)
 API.interceptors.request.use((req) => {
   const userStr = localStorage.getItem('user');
   if (userStr) {
@@ -11,19 +16,20 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
-//Login APIs
+// --- API Helper Functions ---
+
+// Auth
 export const loginUser = (data: any) => API.post('/auth/login', data);
 export const registerUser = (data: any) => API.post('/auth/register', data);
 
-//Meeting APIs
+// Meetings
 export const scheduleMeeting = (data: any) => API.post('/meetings', data);
 export const getMeetings = () => API.get('/meetings');
 export const updateMeetingStatus = (id: string, status: string) => API.put(`/meetings/${id}/status`, { status });
 
-// Document APIs
+// Documents
 export const getDocuments = () => API.get('/documents');
 export const signDocument = (id: string) => API.put(`/documents/${id}/sign`);
-
 export const uploadDocument = (formData: FormData) => {
   return API.post('/documents', formData, {
     headers: {
@@ -32,6 +38,7 @@ export const uploadDocument = (formData: FormData) => {
   });
 };
 
+// Payments
 export const depositFunds = (amount: number) => API.post('/payments/deposit', { amount });
 export const withdrawFunds = (amount: number) => API.post('/payments/withdraw', { amount });
 export const getTransactions = () => API.get('/payments/history');
